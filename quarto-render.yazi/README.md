@@ -76,6 +76,8 @@ typst compile
   ▼
 ~/.yazi-quarto/
 ├─ quarto-gbt9704 extension (auto-installed · 自动安装，≥ v0.7.0)
+│    安装源: songwupei/quarto-gbt9704@dist（CI 物化分支，浮动指向最新发布）
+│    手动升级: cd ~/.yazi-quarto && quarto update songwupei/quarto-gbt9704@dist --no-prompt
 └─ quarto render
     ├─ --to gbt9704-pdf  (xelatex)
     ├─ --to gbt9704-docx

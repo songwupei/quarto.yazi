@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.5.2)
+# quarto-render.sh — Yazi quarto-render 插件配套脚本 (v0.7.4)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -25,7 +25,9 @@ NC='\033[0m'
 
 # ─── 路径 ───
 WORK_DIR="$HOME/.yazi-quarto"
-EXT_NAME="songwupei/quarto-gbt9704"
+# @dist = CI 物化的自包含分支（浮动指向最新发布，装过即跳过不自动升级）
+# 手动更新: cd "$HOME/.yazi-quarto" && quarto update "songwupei/quarto-gbt9704@dist" --no-prompt
+EXT_NAME="songwupei/quarto-gbt9704@dist"
 
 # ─── 参数检查 ───
 if [ $# -lt 1 ]; then
