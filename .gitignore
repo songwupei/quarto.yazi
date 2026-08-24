@@ -1,5 +1,9 @@
+# OMC / Claude Code 状态目录
 .omc/
 .claude/
+
+# 个人待办笔记
+todo.md
 
 # macOS
 .DS_Store

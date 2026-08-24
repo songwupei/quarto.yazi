@@ -1,6 +1,6 @@
-# quarto-render.yazi · 一键 GB/T 9704 排版
+# quarto.yazi · 一键 GB/T 9704 排版
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blue)](https://codeberg.org/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.4-blue)](https://codeberg.org/songwupei/quarto.yazi)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 A Yazi plugin to render `.typ` / `.md` / `.qmd` files into **GB/T 9704** format with a single keypress.
@@ -12,13 +12,13 @@ Yazi 插件：一键将 `.typ` / `.md` / `.qmd` 文件渲染为 **GB/T 9704** �
 ### A: ya pkg (recommended · 推荐, Yazi ≥ 25.5.31)
 
 ```sh
-ya pkg add songwupei/yazi-quarto:quarto-render
+ya pkg add songwupei/quarto.yazi:quarto
 
 # 添加快捷键（在 ~/.config/yazi/keymap.toml 中 [mgr] 段任意位置插入）
 cat >> ~/.config/yazi/keymap.toml << 'EOF'
 [[mgr.prepend_keymap]]
 on = ["R"]
-run = "plugin quarto-render"
+run = "plugin quarto"
 desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"
 EOF
 ```
@@ -28,8 +28,7 @@ Then restart Yazi or reload config.
 ### B: Manual · 手动
 
 ```bash
-git clone https://codeberg.org/songwupei/yazi-quarto.git /tmp/yazi-quarto
-bash /tmp/yazi-quarto/install.sh
+git clone https://codeberg.org/songwupei/quarto.yazi.git ~/.config/yazi/plugins/quarto.yazi
 ```
 
 ## Keymap · 快捷键
@@ -39,7 +38,7 @@ Add to `~/.config/yazi/keymap.toml` under `[mgr]`:
 ```toml
 [[mgr.prepend_keymap]]
 on = ["R"]
-run = "plugin quarto-render"
+run = "plugin quarto"
 desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"
 ```
 

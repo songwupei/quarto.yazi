@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-slides-render.sh — Yazi quarto-render 幻灯片脚本 (v0.7.0)
+# quarto-slides-render.sh — Yazi quarto 幻灯片脚本 (v0.7.0)
 #
 #   .md / .qmd → quarto render → gbt9704-pptx + gbt9704-beamer
 #

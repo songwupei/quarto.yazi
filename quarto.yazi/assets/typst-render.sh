@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# typst-render.sh — Yazi quarto-render 插件 Typst 渲染脚本
+# typst-render.sh — Yazi quarto 插件 Typst 渲染脚本
 #
 # 基于 typst + typst-gbt9704 包，无中间文件：
 #

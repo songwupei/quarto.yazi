@@ -1,4 +1,4 @@
---- quarto-render.yazi v0.7.0
+--- quarto.yazi v0.7.4
 --- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704 + slides
 --- 快捷键触发 → typst compile 或 quarto render → PDF + DOCX + PPTX + Beamer
 ---
@@ -14,7 +14,7 @@ local M = {}
 
 -- Config dir base / 配置目录基础路径
 local CFG = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
-local PLUGIN_DIR = CFG .. "/yazi/plugins/quarto-render.yazi"
+local PLUGIN_DIR = CFG .. "/yazi/plugins/quarto.yazi"
 
 -- Script paths: env var first, fallback to bundled script / 脚本路径
 local QUARTO_SCRIPT = os.getenv("FORGE_RENDER_SCRIPT")
