@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# install.sh — yazi-quarto 一键安装脚本
+# install.sh — quarto.yazi 一键安装脚本
 #
 # 功能:
 #   1. 自动检测项目根目录
@@ -111,18 +111,18 @@ _check_cmd() {
 # 步骤 0: 检测项目根目录 & 环境
 # ════════════════════════════════════════════════════════════
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN_SRC="$PROJECT_DIR/quarto-render.yazi"
+PLUGIN_SRC="$PROJECT_DIR/quarto.yazi"
 QUARTO_SCRIPT="$PLUGIN_SRC/assets/quarto-render.sh"
 TYPST_SCRIPT="$PLUGIN_SRC/assets/typst-render.sh"
 MAIN_LUA="$PLUGIN_SRC/main.lua"
 
 YAZI_CONFIG="${YAZI_CONFIG_HOME:-$HOME/.config/yazi}"
-PLUGIN_DST="$YAZI_CONFIG/plugins/quarto-render.yazi"
+PLUGIN_DST="$YAZI_CONFIG/plugins/quarto.yazi"
 KEYMAP_FILE="$YAZI_CONFIG/keymap.toml"
 
 echo ""
 echo -e "${BOLD}${CYAN}╔══════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${CYAN}║     yazi-quarto  跨电脑安装              ║${NC}"
+echo -e "${BOLD}${CYAN}║     quarto.yazi  跨电脑安装             ║${NC}"
 echo -e "${BOLD}${CYAN}╚══════════════════════════════════════════╝${NC}"
 echo ""
 _info "项目目录 : ${GREEN}$PROJECT_DIR${NC}"
@@ -228,17 +228,17 @@ _step "快捷键配置"
 
 KEYMAP_ENTRY='[[mgr.prepend_keymap]]
 on = ["R"]
-run = "plugin quarto-render"
+run = "plugin quarto"
 desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"'
 
 if $SKIP_KEYMAP; then
     _info "已跳过快捷键配置 (--no-keymap)"
 elif [ -f "$KEYMAP_FILE" ]; then
-    if grep -q "quarto-render" "$KEYMAP_FILE"; then
-        _success "快捷键 R 已配置为 quarto-render"
+    if grep -q "quarto" "$KEYMAP_FILE"; then
+        _success "快捷键 R 已配置为 quarto"
     elif grep -q 'on = \["R"\]' "$KEYMAP_FILE" || grep -q 'on = "R"' "$KEYMAP_FILE"; then
         _warn "快捷键 R 已被其他插件占用"
-        if _confirm "仍添加 quarto-render（需手动修改 keymap 解决冲突）？"; then
+        if _confirm "仍添加 quarto（需手动修改 keymap 解决冲突）？"; then
             echo "" >> "$KEYMAP_FILE"
             echo "$KEYMAP_ENTRY" >> "$KEYMAP_FILE"
             _success "已添加（注意：keymap 中有重复的 R 快捷键）"

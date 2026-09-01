@@ -1,6 +1,6 @@
-# yazi-quarto · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
+# quarto.yazi · 一键中国公文排版 · One-Key GB/T 9704 Typesetting
 
-[![Version](https://img.shields.io/badge/version-0.7.2-blue)](https://github.com/songwupei/yazi-quarto)
+[![Version](https://img.shields.io/badge/version-0.7.5-blue)](https://codeberg.org/songwupei/quarto.yazi)
 [![Yazi](https://img.shields.io/badge/Yazi-%E2%89%A5%2025.5.31-orange)](https://yazi-rs.github.io/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -86,14 +86,13 @@ Format auto-detection: reads `format:` in YAML frontmatter.
 ### ya pkg (recommended · 推荐)
 
 ```sh
-ya pkg add songwupei/yazi-quarto:quarto-render
+ya pkg add songwupei/quarto.yazi:quarto
 ```
 
 ### Manual · 手动
 
 ```bash
-git clone https://github.com/songwupei/yazi-quarto.git /tmp/yazi-quarto
-bash /tmp/yazi-quarto/install.sh
+git clone https://codeberg.org/songwupei/quarto.yazi.git ~/.config/yazi/plugins/quarto.yazi
 ```
 
 ## Usage · 使用
@@ -139,22 +138,28 @@ export FORGE_RENDER_SCRIPT=/path/to/quarto-render.sh
 
 ```toml
 [[mgr.prepend_keymap]]
+on = ["R"]
+run = "plugin quarto"
+desc = "Render .typ/.md/.qmd → GB/T 9704 PDF + more"
+
+[[mgr.prepend_keymap]]
 on = ["R", "g"]
-run = "plugin quarto-render gbt9704"
+run = "plugin quarto gbt9704"
 desc = "GB/T 9704 公文格式"
 
 [[mgr.prepend_keymap]]
 on = ["R", "b"]
-run = "plugin quarto-render textbook"
+run = "plugin quarto textbook"
 desc = "教科书排版格式"
 
 [[mgr.prepend_keymap]]
 on = ["R", "p"]
-run = "plugin quarto-render pptx"
+run = "plugin quarto pptx"
 desc = "幻灯片 → PPTX + Beamer PDF"
 ```
 
 Press **`R`** to enter format selection, then:
+- **`R`** — auto-detect format from YAML frontmatter
 - **`g`** — render as GB/T 9704 government document (PDF + DOCX + HTML + PNG)
 - **`b`** — render as textbook layout (PDF only)
 - **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.0）
