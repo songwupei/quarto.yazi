@@ -1,4 +1,4 @@
---- quarto.yazi v0.7.4
+--- quarto.yazi v0.7.6
 --- Yazi plugin: one-key render .md/.qmd/.typ → GB/T 9704 + slides
 --- 快捷键触发 → typst compile 或 quarto render → PDF + DOCX + PPTX + Beamer
 ---

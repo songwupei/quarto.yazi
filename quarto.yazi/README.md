@@ -74,7 +74,7 @@ typst compile
   │
   ▼
 ~/.yazi-quarto/
-├─ quarto-gbt9704 extension (auto-installed · 自动安装，≥ v0.7.0)
+├─ quarto-gbt9704 extension (auto-installed · 自动安装，≥ v0.7.7)
 │    安装源: songwupei/quarto-gbt9704@dist（CI 物化分支，浮动指向最新发布）
 │    手动升级: cd ~/.yazi-quarto && quarto update songwupei/quarto-gbt9704@dist --no-prompt
 └─ quarto render
@@ -121,7 +121,7 @@ export FORGE_RENDER_SCRIPT=/path/to/quarto-render.sh
 | [typst](https://typst.app/) | Typst compiler (for `.typ` files) |
 | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) | GB/T 9704 Typst package ≥ v0.2.0 |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine (for `.md`/`.qmd` files) |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + slides format extension ≥ v0.7.0 (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + slides format extension ≥ v0.7.7 (auto-installed) |
 
 ## License · 许可证
 

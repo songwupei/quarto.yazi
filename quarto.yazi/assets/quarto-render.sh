@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# quarto-render.sh — Yazi quarto 插件配套脚本 (v0.7.4)
+# quarto-render.sh — Yazi quarto 插件配套脚本 (v0.7.6)
 #
 # 基于 quarto + quarto-gbt9704 扩展，无 PrettyDoc 依赖：
 #
@@ -28,6 +28,43 @@ WORK_DIR="$HOME/.yazi-quarto"
 # @dist = CI 物化的自包含分支（浮动指向最新发布，装过即跳过不自动升级）
 # 手动更新: cd "$HOME/.yazi-quarto" && quarto update "songwupei/quarto-gbt9704@dist" --no-prompt
 EXT_NAME="songwupei/quarto-gbt9704@dist"
+
+# 扩展最低版本：低于此版本会在渲染前自动更新（旧版存在元数据 \\ 转义回归）
+REQUIRED_EXT_VERSION="0.7.7"
+
+# ─── 版本比较: $1 >= $2 ───
+_ver_ge() {
+    [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n 1)" = "$2" ]
+}
+
+# ─── 确保扩展版本不低于要求，必要时自动更新 ───
+_ensure_ext_version() {
+    local ext_yml="$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml"
+    if [ ! -f "$ext_yml" ]; then
+        echo -e "${RED}❌ 未找到扩展清单: $ext_yml${NC}" >&2
+        exit 1
+    fi
+    local installed
+    installed=$(grep -oP 'version:\s*\K[0-9.]+' "$ext_yml" 2>/dev/null | head -n 1 || true)
+    [ -n "$installed" ] || installed="0"
+    if _ver_ge "$installed" "$REQUIRED_EXT_VERSION"; then
+        echo "✅ quarto-gbt9704 v${installed}（≥ v${REQUIRED_EXT_VERSION}）"
+        return 0
+    fi
+    echo "🔄 quarto-gbt9704 v${installed} < v${REQUIRED_EXT_VERSION}，尝试自动更新 ..."
+    if quarto update "$EXT_NAME" --no-prompt >/dev/null 2>&1; then
+        installed=$(grep -oP 'version:\s*\K[0-9.]+' "$ext_yml" 2>/dev/null | head -n 1 || true)
+        [ -n "$installed" ] || installed="0"
+        if _ver_ge "$installed" "$REQUIRED_EXT_VERSION"; then
+            echo "✅ 扩展已更新至 v${installed}"
+            return 0
+        fi
+    fi
+    echo -e "${RED}❌ quarto-gbt9704 v${installed} 低于要求 v${REQUIRED_EXT_VERSION}，且自动更新失败${NC}" >&2
+    echo "   请手动运行:" >&2
+    echo "   cd $WORK_DIR && quarto update $EXT_NAME --no-prompt" >&2
+    exit 1
+}
 
 # ─── 参数检查 ───
 if [ $# -lt 1 ]; then
@@ -150,6 +187,7 @@ _detect_browser() {
 }
 
 _init_workdir
+_ensure_ext_version
 
 # ─── 复制输入文件 + include 目标到工作目录 ───
 cp "$INPUT_FILE" "$WORK_DIR/$INPUT_FILENAME"
@@ -289,6 +327,10 @@ echo ""
 echo "🖨️  quarto render --to ${FORMAT}-pdf ..."
 if ! quarto render "$INPUT_FILENAME" --to ${FORMAT}-pdf 2>&1; then
     echo -e "${RED}❌ PDF 渲染失败${NC}" >&2
+    if [ -f "$WORK_DIR/${INPUT_BASENAME}.log" ]; then
+        echo "── LaTeX 日志末尾 (${INPUT_BASENAME}.log) ──" >&2
+        tail -n 25 "$WORK_DIR/${INPUT_BASENAME}.log" >&2 2>/dev/null || true
+    fi
     _cleanup
     exit 1
 fi

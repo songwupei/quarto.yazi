@@ -59,7 +59,7 @@ No temp files, no cleanup needed. Output goes to source directory.
     │
     ▼
  ~/.yazi-quarto/
- ├─ _extensions/songwupei/gbt9704 (auto-installed, ≥ v0.7.0)
+ ├─ _extensions/songwupei/gbt9704 (auto-installed, ≥ v0.7.7)
  ├─ copy input → pandoc filter chain → .gbt9704.md
  │
  ├─ quarto render (each format independently)
@@ -162,7 +162,7 @@ Press **`R`** to enter format selection, then:
 - **`R`** — auto-detect format from YAML frontmatter
 - **`g`** — render as GB/T 9704 government document (PDF + DOCX + HTML + PNG)
 - **`b`** — render as textbook layout (PDF only)
-- **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.0）
+- **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.7）
 
 Yazi will show available keys in the status bar after pressing `R`.
 
@@ -181,7 +181,7 @@ Yazi will show available keys in the status bar after pressing `R`.
 | [typst](https://typst.app/) | Typst compiler (for `.typ` files) |
 | [typst-gbt9704](https://codeberg.org/songwupei/typst-gbt9704) | GB/T 9704 Typst package ≥ v0.2.0 |
 | [quarto](https://quarto.org/docs/get-started/) | Document rendering engine (for `.md`/`.qmd` files) |
-| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + textbook + slides format extension ≥ v0.7.0 (auto-installed) |
+| [quarto-gbt9704](https://github.com/songwupei/quarto-gbt9704) | GB/T 9704 + textbook + slides format extension ≥ v0.7.7 (auto-installed) |
 
 ## License · 许可证
 

@@ -212,11 +212,11 @@ if [ -f "$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml" ]; then
 	_success "quarto-gbt9704 扩展已存在 (v${_installed_ver})"
 	if _confirm "检查并更新扩展到最新版？"; then
 		_info "正在更新..."
-		quarto add songwupei/quarto-gbt9704 --no-prompt 2>/dev/null && _success "扩展已更新" || _warn "更新失败，当前版本继续可用"
+		quarto add songwupei/quarto-gbt9704@dist --no-prompt 2>/dev/null && _success "扩展已更新" || _warn "更新失败，当前版本继续可用"
 	fi
 else
 	_info "正在下载 quarto-gbt9704（仅此一次，需联网）..."
-	if quarto add songwupei/quarto-gbt9704 --no-prompt 2>&1; then
+	if quarto add songwupei/quarto-gbt9704@dist --no-prompt 2>&1; then
 		_success "quarto-gbt9704 扩展已预安装"
 	else
 		_warn "扩展下载失败，首次渲染时将自动重试"
