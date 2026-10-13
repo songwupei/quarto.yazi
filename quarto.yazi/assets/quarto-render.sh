@@ -32,18 +32,49 @@ EXT_NAME="songwupei/quarto-gbt9704@dist"
 # 扩展最低版本：低于此版本会在渲染前自动更新（旧版存在元数据 \\ 转义回归）
 REQUIRED_EXT_VERSION="0.7.7"
 
+# ─── 超时保护 ───
+# quarto / LaTeX 出错时可能停在交互提示上等输入（实测挂过 12 分钟以上），
+# 因此所有外部命令都套一层 timeout；超时退出码 124 单独提示。
+# 可用 QUARTO_RENDER_TIMEOUT / QUARTO_ADD_TIMEOUT 覆盖（秒）。
+TIMEOUT_BIN=$(command -v timeout || true)
+RENDER_TIMEOUT="${QUARTO_RENDER_TIMEOUT:-600}"
+ADD_TIMEOUT="${QUARTO_ADD_TIMEOUT:-300}"
+
+_run_t() {  # _run_t <超时秒数> <命令...>
+    local t="$1"; shift
+    if [ -n "$TIMEOUT_BIN" ]; then
+        "$TIMEOUT_BIN" "$t" "$@"
+    else
+        "$@"
+    fi
+}
+
 # ─── 版本比较: $1 >= $2 ───
 _ver_ge() {
     [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | head -n 1)" = "$2" ]
 }
 
+# ─── 定位已安装的 gbt9704 扩展目录 ───
+# 兼容两种布局：quarto add 安装的 songwupei/gbt9704，以及手动投放的 gbt9704
+_gbt_ext_dir() {
+    local d
+    for d in "$WORK_DIR/_extensions/songwupei/gbt9704" "$WORK_DIR/_extensions/gbt9704"; do
+        if [ -f "$d/_extension.yml" ]; then
+            printf '%s\n' "$d"
+            return 0
+        fi
+    done
+    return 1
+}
+
 # ─── 确保扩展版本不低于要求，必要时自动更新 ───
 _ensure_ext_version() {
-    local ext_yml="$WORK_DIR/_extensions/songwupei/gbt9704/_extension.yml"
-    if [ ! -f "$ext_yml" ]; then
-        echo -e "${RED}❌ 未找到扩展清单: $ext_yml${NC}" >&2
+    local ext_dir ext_yml
+    if ! ext_dir=$(_gbt_ext_dir); then
+        echo -e "${RED}❌ 未找到 gbt9704 扩展（$WORK_DIR/_extensions 下）${NC}" >&2
         exit 1
     fi
+    ext_yml="$ext_dir/_extension.yml"
     local installed
     installed=$(grep -oP 'version:\s*\K[0-9.]+' "$ext_yml" 2>/dev/null | head -n 1 || true)
     [ -n "$installed" ] || installed="0"
@@ -52,7 +83,7 @@ _ensure_ext_version() {
         return 0
     fi
     echo "🔄 quarto-gbt9704 v${installed} < v${REQUIRED_EXT_VERSION}，尝试自动更新 ..."
-    if quarto update "$EXT_NAME" --no-prompt >/dev/null 2>&1; then
+    if _run_t "$ADD_TIMEOUT" quarto update "$EXT_NAME" --no-prompt >/dev/null 2>&1; then
         installed=$(grep -oP 'version:\s*\K[0-9.]+' "$ext_yml" 2>/dev/null | head -n 1 || true)
         [ -n "$installed" ] || installed="0"
         if _ver_ge "$installed" "$REQUIRED_EXT_VERSION"; then
@@ -79,6 +110,9 @@ if [ ! -f "$INPUT_FILE" ]; then
     echo -e "${RED}❌ 文件不存在: $INPUT_FILE${NC}" >&2
     exit 1
 fi
+
+# 统一成绝对路径：脚本中途会 cd "$WORK_DIR"，相对路径到那时就找不到了
+INPUT_FILE=$(realpath "$INPUT_FILE")
 
 INPUT_FILENAME=$(basename "$INPUT_FILE")
 INPUT_BASENAME="${INPUT_FILENAME%.*}"
@@ -108,9 +142,9 @@ _init_workdir() {
     echo "🔧 检查 quarto-gbt9704 扩展 ..."
     cd "$WORK_DIR"
 
-    if [ ! -f "_extensions/songwupei/gbt9704/_extension.yml" ]; then
+    if ! _gbt_ext_dir >/dev/null; then
         echo "📦 安装 $EXT_NAME ..."
-        if ! quarto add "$EXT_NAME" --no-prompt 2>&1; then
+        if ! _run_t "$ADD_TIMEOUT" quarto add "$EXT_NAME" --no-prompt 2>&1; then
             echo -e "${RED}❌ 扩展安装失败: $EXT_NAME${NC}" >&2
             echo "   请检查网络连接，或手动运行:" >&2
             echo "   cd $WORK_DIR && quarto add $EXT_NAME" >&2
@@ -124,7 +158,7 @@ _init_workdir() {
     # Install textbook extension (independent repo)
     if [ ! -d "_extensions/songwupei/textbook" ] && [ ! -d "_extensions/textbook" ]; then
         echo "📦 安装 textbook 扩展 ..."
-        if ! quarto add songwupei/quarto-textbook --no-prompt 2>&1; then
+        if ! _run_t "$ADD_TIMEOUT" quarto add songwupei/quarto-textbook --no-prompt 2>&1; then
             echo -e "${YELLOW}⚠  textbook 扩展安装失败（不影响 gbt9704 渲染）${NC}"
         else
             echo "✅ textbook 扩展已安装"
@@ -305,7 +339,7 @@ if ! $PDF_ONLY; then
 FILTER_DIR="$WORK_DIR/_extensions/songwupei/gbt9704/assets/filters"
 echo ""
 echo "📋 生成 .gbt9704.md（filter 处理后的中间 markdown）..."
-if pandoc "$INPUT_FILENAME" \
+if _run_t 120 pandoc "$INPUT_FILENAME" \
     --lua-filter="$FILTER_DIR/gbt9704-metadata.lua" \
     --lua-filter="$FILTER_DIR/numbering-to-headings.lua" \
     --lua-filter="$FILTER_DIR/heading-demotion.lua" \
@@ -325,8 +359,16 @@ fi  # if ! $PDF_ONLY
 # ─── quarto render ───
 echo ""
 echo "🖨️  quarto render --to ${FORMAT}-pdf ..."
-if ! quarto render "$INPUT_FILENAME" --to ${FORMAT}-pdf 2>&1; then
-    echo -e "${RED}❌ PDF 渲染失败${NC}" >&2
+set +e
+_run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-pdf 2>&1
+RENDER_RC=$?
+set -e
+if [ $RENDER_RC -ne 0 ]; then
+    if [ $RENDER_RC -eq 124 ]; then
+        echo -e "${RED}❌ PDF 渲染超时（${RENDER_TIMEOUT}s，可用 QUARTO_RENDER_TIMEOUT 调整）${NC}" >&2
+    else
+        echo -e "${RED}❌ PDF 渲染失败（exit=${RENDER_RC}）${NC}" >&2
+    fi
     if [ -f "$WORK_DIR/${INPUT_BASENAME}.log" ]; then
         echo "── LaTeX 日志末尾 (${INPUT_BASENAME}.log) ──" >&2
         tail -n 25 "$WORK_DIR/${INPUT_BASENAME}.log" >&2 2>/dev/null || true
@@ -338,15 +380,23 @@ echo "   ✓ PDF 完成"
 
 if ! $PDF_ONLY; then
 echo "🖨️  quarto render --to ${FORMAT}-docx ..."
-if ! quarto render "$INPUT_FILENAME" --to ${FORMAT}-docx 2>&1; then
-    echo -e "${RED}❌ DOCX 渲染失败${NC}" >&2
+set +e
+_run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-docx 2>&1
+RENDER_RC=$?
+set -e
+if [ $RENDER_RC -ne 0 ]; then
+    if [ $RENDER_RC -eq 124 ]; then
+        echo -e "${RED}❌ DOCX 渲染超时（${RENDER_TIMEOUT}s）${NC}" >&2
+    else
+        echo -e "${RED}❌ DOCX 渲染失败（exit=${RENDER_RC}）${NC}" >&2
+    fi
     _cleanup
     exit 1
 fi
 echo "   ✓ DOCX 完成"
 
 echo "🖨️  quarto render --to ${FORMAT}-html ..."
-if quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 2>&1; then
+if _run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 2>&1; then
     echo "   ✓ HTML 完成"
 
     # ─── HTML → PNG 截图 ───
@@ -354,7 +404,7 @@ if quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 2>&1; then
     if [ -n "$BROWSER" ] && [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
         echo "📸 $BROWSER 截图 → PNG ..."
         PNG_WIDTH=900
-        if "$BROWSER" \
+        if _run_t 180 "$BROWSER" \
             --headless --disable-gpu --no-sandbox \
             --screenshot="$WORK_DIR/${INPUT_BASENAME}.png" \
             --window-size="${PNG_WIDTH},24000" \
