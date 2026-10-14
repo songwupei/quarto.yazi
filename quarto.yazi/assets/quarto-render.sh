@@ -29,8 +29,10 @@ WORK_DIR="$HOME/.yazi-quarto"
 # 手动更新: cd "$HOME/.yazi-quarto" && quarto update "songwupei/quarto-gbt9704@dist" --no-prompt
 EXT_NAME="songwupei/quarto-gbt9704@dist"
 
-# 扩展最低版本：低于此版本会在渲染前自动更新（旧版存在元数据 \\ 转义回归）
-REQUIRED_EXT_VERSION="0.7.7"
+# 扩展最低版本：低于此版本会在渲染前自动更新。
+# 0.8.1 起：PDF 默认引擎 XeLaTeX（LuaLaTeX 在部分机器无法嵌入系统 CJK 字体）、
+# 标题/页码/版心按 GB/T 9704 修正、新增 fandol 选项、基类由 memoir 迁移到 ctexart。
+REQUIRED_EXT_VERSION="0.8.1"
 
 # ─── 超时保护 ───
 # quarto / LaTeX 出错时可能停在交互提示上等输入（实测挂过 12 分钟以上），
