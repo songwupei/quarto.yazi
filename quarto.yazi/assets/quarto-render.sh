@@ -335,6 +335,29 @@ if $PDF_ONLY; then
     echo "ℹ️  ${FORMAT} 格式仅支持 PDF 输出"
 fi
 
+# ─── 输出范围开关 ───
+# 默认全量：PDF + DOCX + HTML + PNG（长图）。
+#   QUARTO_FAST=1      → 只出 PDF（改模板/调版式时最快，跳过 DOCX/HTML/截图）
+#   QUARTO_DOCX=false  → 跳过 DOCX
+#   QUARTO_HTML=false  → 跳过 HTML（连带不截图）
+#   QUARTO_PNG=false   → 保留 HTML，只跳过 chromium 长图截图（通常最耗时的一步）
+WANT_DOCX="${QUARTO_DOCX:-true}"
+WANT_HTML="${QUARTO_HTML:-true}"
+WANT_PNG="${QUARTO_PNG:-true}"
+if [ "${QUARTO_FAST:-0}" != "0" ]; then
+    WANT_DOCX=false
+    WANT_HTML=false
+    WANT_PNG=false
+    echo "⚡ QUARTO_FAST=1：只出 PDF"
+fi
+_scope="PDF"
+if [ "$WANT_DOCX" = "true" ]; then _scope="${_scope} + DOCX"; fi
+if [ "$WANT_HTML" = "true" ]; then
+    _scope="${_scope} + HTML"
+    if [ "$WANT_PNG" = "true" ]; then _scope="${_scope} + PNG"; fi
+fi
+echo "📦 本次输出：${_scope}"
+
 # ─── pandoc filter-only: 生成 .gbt9704.md 中间文件 ───
 # (仅 gbt9704 格式；textbook 格式跳过)
 if ! $PDF_ONLY; then
@@ -381,6 +404,7 @@ fi
 echo "   ✓ PDF 完成"
 
 if ! $PDF_ONLY; then
+if [ "$WANT_DOCX" = "true" ]; then
 echo "🖨️  quarto render --to ${FORMAT}-docx ..."
 set +e
 _run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-docx 2>&1
@@ -396,14 +420,20 @@ if [ $RENDER_RC -ne 0 ]; then
     exit 1
 fi
 echo "   ✓ DOCX 完成"
+else
+    echo "⏭  跳过 DOCX（QUARTO_DOCX/QUARTO_FAST）"
+fi
 
+if [ "$WANT_HTML" = "true" ]; then
 echo "🖨️  quarto render --to ${FORMAT}-html ..."
 if _run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 2>&1; then
     echo "   ✓ HTML 完成"
 
     # ─── HTML → PNG 截图 ───
     BROWSER=$(_detect_browser)
-    if [ -n "$BROWSER" ] && [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
+    if [ "$WANT_PNG" != "true" ]; then
+        echo "⏭  跳过 PNG 长图（QUARTO_PNG/QUARTO_FAST）"
+    elif [ -n "$BROWSER" ] && [ -f "$WORK_DIR/${INPUT_BASENAME}.html" ]; then
         echo "📸 $BROWSER 截图 → PNG ..."
         PNG_WIDTH=900
         if _run_t 180 "$BROWSER" \
@@ -436,6 +466,9 @@ if _run_t "$RENDER_TIMEOUT" quarto render "$INPUT_FILENAME" --to ${FORMAT}-html 
     fi
 else
     echo -e "${YELLOW}⚠  HTML 渲染失败（可能需要 quarto-gbt9704 ≥ v0.3.1）${NC}"
+fi
+else
+    echo "⏭  跳过 HTML/PNG（QUARTO_HTML/QUARTO_FAST）"
 fi
 fi  # if ! $PDF_ONLY
 

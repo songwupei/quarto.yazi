@@ -58,12 +58,16 @@ local function extract_summary(stdout)
     return "Done!"
 end
 
-local function run_script(script, file_path, force_fmt)
+local function run_script(script, file_path, force_fmt, fast)
     local cmd = Command("bash")
         :arg(script)
         :arg(file_path)
     if force_fmt and #force_fmt > 0 then
         cmd = cmd:arg(force_fmt)
+    end
+    -- fast：只出 PDF（脚本侧读 QUARTO_FAST，跳过 DOCX/HTML/PNG）
+    if fast then
+        cmd = cmd:env("QUARTO_FAST", "1")
     end
     local output, err_code = cmd
         :stdout(Command.PIPED)
@@ -135,6 +139,12 @@ function M:entry(args)
         return
     end
 
+    -- fast / pdf：只出 PDF 的快速模式（不作为格式参数传下去）
+    local fast_mode = (force_fmt == "fast" or force_fmt == "pdf")
+    if fast_mode then
+        force_fmt = nil
+    end
+
     -- Detect file type and route / 检测文件类型并分流
     local is_typ = file_path:match("%.typ$")
     local is_md = file_path:match("%.md$")
@@ -182,7 +192,7 @@ function M:entry(args)
         level = "info",
     })
 
-    run_script(script, file_path, force_fmt)
+    run_script(script, file_path, force_fmt, fast_mode)
 end
 
 return M

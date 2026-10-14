@@ -132,7 +132,19 @@ export TYPST_PNG_PPI=300
 ```bash
 # Override render script path
 export FORGE_RENDER_SCRIPT=/path/to/quarto-render.sh
+
+# 输出范围（默认全量：PDF + DOCX + HTML + PNG 长图）
+export QUARTO_FAST=1        # 只出 PDF —— 改模板/调版式时最快（跳过 DOCX/HTML/截图）
+export QUARTO_DOCX=false    # 只跳过 DOCX
+export QUARTO_HTML=false    # 跳过 HTML（连带不截图）
+export QUARTO_PNG=false     # 保留 HTML，只跳过 chromium 长图截图（通常最耗时）
+
+# 超时（秒）：渲染 600、安装/更新扩展 300
+export QUARTO_RENDER_TIMEOUT=600
+export QUARTO_ADD_TIMEOUT=300
 ```
+
+实测（16 页稿子，本机）：全量约 100–120 秒，`QUARTO_FAST=1` 约 53 秒。
 
 ## Keymap · 快捷键
 
@@ -156,6 +168,11 @@ desc = "教科书排版格式"
 on = ["R", "p"]
 run = "plugin quarto pptx"
 desc = "幻灯片 → PPTX + Beamer PDF"
+
+[[mgr.prepend_keymap]]
+on = ["R", "f"]
+run = "plugin quarto fast"
+desc = "只出 PDF（快速，跳过 DOCX/HTML/PNG）"
 ```
 
 Press **`R`** to enter format selection, then:
@@ -163,6 +180,7 @@ Press **`R`** to enter format selection, then:
 - **`g`** — render as GB/T 9704 government document (PDF + DOCX + HTML + PNG)
 - **`b`** — render as textbook layout (PDF only)
 - **`p`** — render slides → PPTX + Beamer PDF（需 gbt9704 ≥ v0.7.7）
+- **`f`** — 只出 PDF（`QUARTO_FAST=1`，跳过 DOCX/HTML/PNG 长图）
 
 Yazi will show available keys in the status bar after pressing `R`.
 
